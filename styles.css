@@ -308,16 +308,13 @@ a:hover { color: var(--gold-dark); }
   font-weight: 700;
 }
 
-.mission-body {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem;
-  align-items: start;
+.mission-single {
+  max-width: 780px;
+  margin-bottom: 2.5rem;
 }
-@media (max-width: 720px) {
-  .mission-body { grid-template-columns: 1fr; gap: 2rem; }
-}
-.mission-col p { margin-bottom: 1.1rem; font-size: .97rem; line-height: 1.85; }
-.mission-col p:last-child { margin-bottom: 0; }
-.mission-col strong { color: var(--ink); }
+.mission-single p { margin-bottom: 1.1rem; font-size: .97rem; line-height: 1.9; }
+.mission-single p:last-child { margin-bottom: 0; }
+.mission-single strong { color: var(--ink); }
 .mission-highlight {
   background: var(--gold-pale);
   border-left: 3px solid var(--gold);
@@ -327,10 +324,11 @@ a:hover { color: var(--gold-dark); }
 }
 
 .mission-flow {
-  display: flex; align-items: center; gap: .8rem;
+  display: inline-flex; align-items: center; gap: 1rem;
   background: var(--ink); border-radius: var(--r);
-  padding: 1.2rem 1.4rem; margin-top: 1.5rem;
-  flex-wrap: wrap; gap: .6rem;
+  padding: 1.4rem 2rem;
+  flex-wrap: wrap;
+  max-width: 560px;
 }
 .flow-item {
   display: flex; align-items: center; gap: .7rem;
