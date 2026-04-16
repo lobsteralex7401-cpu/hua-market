@@ -5,14 +5,18 @@
 /* ── TOKENS ── */
 :root {
   --gold:        #c9a227;
-  --gold-dark:   #a07d10;
-  --gold-light:  #f5e9c0;
-  --gold-pale:   #fdf8ec;
-  --ink:         #1a1a2e;
-  --ink-mid:     #2d2d48;
-  --sub:         #555570;
-  --border:      #e2ddd0;
-  --bg:          #faf9f5;
+  --gold-dark:   #9a7a1a;
+  --gold-mid:    #b8901a;
+  --gold-light:  #e8d58a;
+  --gold-pale:   #fdf8e8;
+  --ink:         #1a1510;
+  --ink-mid:     #2a2318;
+  --sub:         #5a5040;
+  --border:      #d8cdb8;
+  --bg:          #faf6ef;
+  --ivory:       #faf6ef;
+  --ivory-dark:  #f0e8d8;
+  --cream:       #e8dfc8;
   --white:       #ffffff;
   --accent:      #d63384;
   --accent-dark: #a8265f;
@@ -21,7 +25,7 @@
   --green-bg:    #f1f8f2;
   --coral:       #e05a5a;
   --r:           10px;
-  --shadow:      0 2px 20px rgba(26,26,46,.08);
+  --shadow:      0 2px 20px rgba(26,21,16,.08);
   --shadow-gold: 0 4px 24px rgba(201,162,39,.18);
 }
 
@@ -158,7 +162,7 @@ a:hover { color: var(--gold-dark); }
 /* ── HERO ── */
 .hero {
   position: relative;
-  background: linear-gradient(160deg, var(--ink) 0%, #2d2d48 50%, #1a2040 100%);
+  background: linear-gradient(160deg, var(--ink) 0%, #2a2318 50%, #1a1510 100%);
   padding: 5rem 0 4rem;
   overflow: hidden;
 }
@@ -458,7 +462,7 @@ a:hover { color: var(--gold-dark); }
 /* ── INVESTOR ── */
 .investor-section {
   padding: 5rem 0 5rem;
-  background: linear-gradient(160deg, var(--ink) 0%, #2d2d48 100%);
+  background: linear-gradient(160deg, var(--ink) 0%, #2a2318 100%);
   position: relative; overflow: hidden;
 }
 .investor-section::before {
@@ -577,7 +581,7 @@ a:hover { color: var(--gold-dark); }
 
 /* form header */
 .form-topbar {
-  background: linear-gradient(135deg, var(--ink) 0%, #2d2d48 100%);
+  background: linear-gradient(135deg, var(--ink) 0%, #2a2318 100%);
   padding: 2rem 2rem 1.8rem;
 }
 .form-topbar-badge {
