@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>後台管理 — 華市集孵化基地</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+    :root {
+      --gold:       #c9a227;
+      --gold-dark:  #a07d10;
+      --gold-pale:  #fdf8ec;
+      --ink:        #1a1a2e;
+      --sub:        #555570;
+      --border:     #e2ddd0;
+      --bg:         #f8f5f0;
+      --white:      #ffffff;
+      --green:      #2e7d32;
+      --coral:      #e05a5a;
+    }
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── LOGIN ── */
+    .login-screen {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(160deg, var(--ink) 0%, #2d2d48 100%);
+      padding: 1.5rem;
+    }
+    .login-box {
+      background: #fff; border-radius: 16px;
+      padding: 2.8rem 2.4rem; max-width: 400px; width: 100%;
+      box-shadow: 0 12px 50px rgba(0,0,0,.3);
+      text-align: center;
+    }
+    .login-logo {
+      font-size: 1.1rem; font-weight: 700; color: var(--gold);
+      margin-bottom: .2rem; letter-spacing: .5px;
+    }
+    .login-logo span { color: var(--ink); }
+    .login-title { font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-bottom: .3rem; }
+    .login-sub { font-size: .83rem; color: var(--sub); margin-bottom: 2rem; }
+    .login-field { text-align: left; margin-bottom: 1rem; }
+    .login-field label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink); margin-bottom: .4rem; }
+    .login-field input {
+      width: 100%; padding: .75rem .95rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: .95rem; color: var(--ink);
+      background: #fff; transition: border-color .18s, box-shadow .18s;
+    }
+    .login-field input:focus {
+      outline: none; border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,162,39,.15);
+    }
+    .pwd-err { display: block; font-size: .8rem; color: var(--coral); margin-top: .35rem; min-height: 1rem; }
+    .login-btn {
+      width: 100%; padding: .85rem;
+      background: var(--gold); color: var(--ink);
+      border: none; border-radius: 8px;
+      font-family: inherit; font-size: .95rem; font-weight: 700;
+      cursor: pointer; margin-top: .5rem; transition: background .2s;
+    }
+    .login-btn:hover { background: var(--gold-dark); color: #fff; }
+
+    /* ── ADMIN LAYOUT ── */
+    #admin-screen { display: flex; flex-direction: column; min-height: 100vh; }
+
+    .admin-header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--ink); border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: .8rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+    .admin-header-left { display: flex; align-items: center; gap: .75rem; }
+    .admin-brand { font-size: 1rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
+    .sub-badge {
+      background: var(--gold); color: var(--ink);
+      font-size: .73rem; font-weight: 700;
+      padding: .18rem .6rem; border-radius: 99px;
+    }
+    .admin-header-right { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; }
+
+    .abtn {
+      padding: .42rem .85rem; border-radius: 7px;
+      font-family: inherit; font-size: .82rem; font-weight: 600; cursor: pointer;
+      border: 1.5px solid var(--gold); background: var(--gold); color: var(--ink);
+      transition: all .2s; white-space: nowrap;
+    }
+    .abtn:hover { background: var(--gold-dark); border-color: var(--gold-dark); color: #fff; }
+    .abtn-outline { background: transparent; color: var(--gold); }
+    .abtn-outline:hover { background: var(--gold); color: var(--ink); }
+    .abtn-ghost {
+      display: inline-flex; align-items: center;
+      padding: .42rem .75rem; border-radius: 7px;
+      font-family: inherit; font-size: .82rem; cursor: pointer;
+      border: 1.5px solid rgba(255,255,255,.15); background: transparent;
+      color: rgba(255,255,255,.5);
+      transition: all .2s; white-space: nowrap; text-decoration: none;
+    }
+    .abtn-ghost:hover { border-color: var(--gold); color: var(--gold); text-decoration: none; }
+
+    .admin-main { padding: 1.5rem 1.5rem 3rem; flex: 1; }
+
+    /* FILTER BAR */
+    .filter-bar {
+      display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.2rem; align-items: center;
+    }
+    .filter-bar input[type="text"] {
+      padding: .42rem .8rem; border: 1.5px solid var(--border);
+      border-radius: 7px; font-family: inherit; font-size: .83rem;
+      background: #fff; color: var(--ink); min-width: 200px;
+      transition: border-color .2s;
+    }
+    .filter-bar input[type="text"]:focus { outline: none; border-color: var(--gold); }
+    .filter-bar select {
+      padding: .42rem .8rem; border: 1.5px solid var(--border);
+      border-radius: 7px; font-family: inherit; font-size: .83rem;
+      background: #fff; color: var(--sub); cursor: pointer;
+    }
+    .filter-bar select:focus { outline: none; border-color: var(--gold); }
+    .filter-count { font-size: .82rem; color: var(--sub); margin-left: .3rem; }
+
+    /* STATS */
+    .stats-row { display: flex; gap: .7rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .stat-chip {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 8px; padding: .55rem 1rem;
+      font-size: .82rem; color: var(--sub); white-space: nowrap;
+    }
+    .stat-chip strong { color: var(--gold-dark); font-size: 1.15rem; margin-right: .2rem; }
+
+    /* STATES */
+    .state-box { text-align: center; padding: 5rem 1rem; color: var(--sub); }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border); border-top-color: var(--gold);
+      border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* TABLE */
+    .table-wrap {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 10px; overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; min-width: 1400px; }
+    thead th {
+      background: #fdfbf5; padding: .7rem .9rem;
+      text-align: left; font-weight: 700; color: var(--ink);
+      font-size: .77rem; letter-spacing: .3px;
+      border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid #f5f0e8; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--gold-pale); }
+    td { padding: .65rem .9rem; vertical-align: top; color: var(--ink); line-height: 1.5; }
+
+    .ci   { width: 36px; color: #bbb; text-align: center; font-size: .78rem; }
+    .cd   { width: 120px; font-size: .77rem; color: var(--sub); white-space: nowrap; }
+    .cn   { width: 70px; font-weight: 600; white-space: nowrap; }
+    .cp   { width: 110px; white-space: nowrap; }
+    .ce   { max-width: 150px; word-break: break-all; }
+
+    .expand {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: .81rem; color: var(--sub); line-height: 1.45; cursor: help;
+    }
+    tr:hover .expand { -webkit-line-clamp: unset; overflow: visible; }
+
+    .badge {
+      display: inline-block; padding: .18rem .55rem;
+      border-radius: 99px; font-size: .74rem; font-weight: 600;
+    }
+    .b-idea       { background: #f3e5f5; color: #7b1fa2; }
+    .b-early      { background: #e3f2fd; color: #1565c0; }
+    .b-growing    { background: #e8f5e9; color: #2e7d32; }
+    .b-established{ background: #fff8e1; color: #f57f17; }
+    .b-market     { background: #e8eaf6; color: #3949ab; }
+    .b-incubation { background: #f3e5f5; color: #7b1fa2; }
+    .b-investment { background: #fff8e1; color: #f57f17; }
+    .b-all        { background: #fce4ec; color: #c62828; }
+    .b-yes        { background: #e8f5e9; color: #2e7d32; }
+    .b-no         { background: #fce4ec; color: #c62828; }
+    .b-food       { background: #fff3e0; color: #e65100; }
+    .b-handcraft  { background: #f3e5f5; color: #6a1b9a; }
+    .b-fashion    { background: #fce4ec; color: #880e4f; }
+    .b-beauty     { background: #fdf0f5; color: #ad1457; }
+    .b-lifestyle  { background: #e8f5e9; color: #1b5e20; }
+    .b-culture    { background: #e3f2fd; color: #0d47a1; }
+    .b-service    { background: #e0f2f1; color: #004d40; }
+    .b-other      { background: #f5f5f5; color: #424242; }
+
+    .file-btn {
+      display: inline-flex; align-items: center; gap: .22rem;
+      padding: .25rem .55rem;
+      background: var(--gold-pale); border: 1px solid #e8d898;
+      border-radius: 5px; font-size: .77rem; font-weight: 600;
+      color: var(--gold-dark); white-space: nowrap; text-decoration: none; transition: all .15s;
+    }
+    .file-btn:hover { background: var(--gold); color: var(--ink); text-decoration: none; }
+    .no-file { color: #ccc; font-size: .79rem; }
+
+    @media (max-width: 640px) {
+      .admin-header { padding: .65rem 1rem; }
+      .admin-main   { padding: 1rem 1rem 2rem; }
+    }
+
+    /* STATUS SELECTOR */
+    .status-select {
+      padding: .2rem .4rem; font-size: .75rem;
+      border: 1px solid var(--border); border-radius: 5px;
+      background: #fff; font-family: inherit; cursor: pointer;
+    }
+    .status-select:focus { outline: none; border-color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<!-- ═══ 登入畫面 ═══ -->
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <div class="login-logo"><span>華</span>市集孵化基地</div>
+    <h1 class="login-title">後台管理</h1>
+    <p class="login-sub">招商申請資料管理系統</p>
+    <form id="login-form">
+      <div class="login-field">
+        <label for="pwd-input">管理員密碼</label>
+        <input type="password" id="pwd-input" placeholder="請輸入密碼" autocomplete="current-password">
+        <small id="pwd-err" class="pwd-err"></small>
+      </div>
+      <button type="submit" class="login-btn">登入後台</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══ 後台主畫面 ═══ -->
+<div id="admin-screen" hidden>
+
+  <header class="admin-header">
+    <div class="admin-header-left">
+      <span class="admin-brand">✦ 華市集孵化基地 後台</span>
+      <span id="sub-badge" class="sub-badge" hidden></span>
+    </div>
+    <div class="admin-header-right">
+      <button id="refresh-btn" class="abtn-ghost">↻ 重新整理</button>
+      <button id="export-btn" class="abtn">⬇ 匯出 CSV</button>
+      <a href="index.html" class="abtn-ghost">← 回首頁</a>
+      <button id="logout-btn" class="abtn abtn-outline">登出</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+
+    <!-- 統計列 -->
+    <div id="stats-row" class="stats-row" hidden>
+      <div class="stat-chip"><strong id="s-total">0</strong>筆申請</div>
+      <div class="stat-chip"><strong id="s-market">0</strong>求市集場域</div>
+      <div class="stat-chip"><strong id="s-incubation">0</strong>求孵化支援</div>
+      <div class="stat-chip"><strong id="s-investment">0</strong>求投資對接</div>
+      <div class="stat-chip"><strong id="s-all">0</strong>全部都要</div>
+      <div class="stat-chip"><strong id="s-line">0</strong>已加入 Line</div>
+    </div>
+
+    <!-- 篩選 -->
+    <div id="filter-bar" class="filter-bar" hidden>
+      <input type="text" id="search-input" placeholder="🔍 搜尋姓名、品牌、Email…">
+      <select id="filter-stage">
+        <option value="">所有階段</option>
+        <option value="idea">構想期</option>
+        <option value="early">初創期</option>
+        <option value="growing">成長期</option>
+        <option value="established">成熟期</option>
+      </select>
+      <select id="filter-category">
+        <option value="">所有品類</option>
+        <option value="food">食品/飲品</option>
+        <option value="handcraft">手作/工藝</option>
+        <option value="fashion">服飾/配件</option>
+        <option value="beauty">美妝/保養</option>
+        <option value="lifestyle">生活用品</option>
+        <option value="culture">文化/藝術</option>
+        <option value="service">服務/體驗</option>
+        <option value="other">其他</option>
+      </select>
+      <select id="filter-expectation">
+        <option value="">所有需求</option>
+        <option value="market">市集場域</option>
+        <option value="incubation">品牌孵化</option>
+        <option value="investment">投資對接</option>
+        <option value="all">全部</option>
+      </select>
+      <span id="filter-count" class="filter-count"></span>
+    </div>
+
+    <!-- 載入中 -->
+    <div id="state-loading" class="state-box">
+      <div class="spinner"></div>
+      <p>正在載入招商申請資料…</p>
+    </div>
+
+    <!-- 錯誤 -->
+    <div id="state-error" class="state-box" hidden>
+      <p style="margin-bottom:1.2rem;font-size:.95rem;">⚠️ <span id="err-msg">載入失敗</span></p>
+      <button onclick="loadData()" class="abtn">重試</button>
+    </div>
+
+    <!-- 空 -->
+    <div id="state-empty" class="state-box" hidden>
+      <p>目前尚無招商申請資料</p>
+    </div>
+
+    <!-- 表格 -->
+    <div id="table-wrap" class="table-wrap" hidden>
+      <table>
+        <thead>
+          <tr>
+            <th class="ci">#</th>
+            <th class="cd">申請時間</th>
+            <th class="cn">姓名</th>
+            <th style="min-width:110px">品牌/攤位名稱</th>
+            <th class="cp">手機</th>
+            <th class="ce">Email</th>
+            <th style="min-width:130px">社群/官網</th>
+            <th style="width:90px">品牌階段</th>
+            <th style="width:90px">品類</th>
+            <th style="min-width:120px">目前通路</th>
+            <th style="min-width:180px">品牌介紹</th>
+            <th style="width:90px">需求</th>
+            <th style="min-width:150px">補充說明</th>
+            <th style="width:75px">Line</th>
+            <th style="width:90px">責任險文件</th>
+            <th style="width:90px">食品登錄文件</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ═══ 設定 ═══
+const ADMIN_PWD = 'hua@2026';
+const GAS_URL   = 'https://script.google.com/macros/s/AKfycbyq_RNKI37m1pH1_BiwZy4Ta0EaGuzJ-Pxhu51i04KH1b-rdQP3T3BfoSS9gVev9w/exec';
+
+let allSubs      = [];
+let filteredSubs = [];
+
+// ─── 登入 ───
+document.getElementById('login-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = document.getElementById('pwd-input').value;
+  if (v === ADMIN_PWD) {
+    document.getElementById('login-screen').hidden = true;
+    document.getElementById('admin-screen').hidden = false;
+    loadData();
+  } else {
+    document.getElementById('pwd-err').textContent = '密碼錯誤，請再試一次';
+    document.getElementById('pwd-input').select();
+  }
+});
+
+// ─── 登出 ───
+document.getElementById('logout-btn').addEventListener('click', () => {
+  document.getElementById('admin-screen').hidden = true;
+  document.getElementById('login-screen').hidden = false;
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-err').textContent = '';
+  allSubs = []; filteredSubs = [];
+});
+
+// ─── 重新整理 ───
+document.getElementById('refresh-btn').addEventListener('click', loadData);
+
+// ─── 篩選監聽 ───
+['search-input','filter-stage','filter-category','filter-expectation'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', applyFilters);
+});
+
+// ─── 載入資料 ───
+async function loadData() {
+  setState('loading');
+  try {
+    if (!GAS_URL || GAS_URL.includes('YOUR_GAS_URL')) {
+      throw new Error('請先在 admin.html 填入 GAS_URL（Google Apps Script 部署網址）');
+    }
+    const res = await fetch(GAS_URL);
+    if (!res.ok) throw new Error('GAS 回應錯誤 ' + res.status);
+    const raw = await res.json();
+    if (raw && raw.error) throw new Error('GAS 錯誤：' + raw.error);
+
+    allSubs = (Array.isArray(raw) ? raw : []).map((row, i) => ({
+      created_at: row['報名時間'] || row['申請時間'] || '',
+      data: {
+        fullName:       row['姓名']          || '',
+        organization:   row['品牌/攤位名稱'] || '',
+        phone:          row['手機']           || '',
+        email:          row['Email']          || '',
+        socialLink:     row['社群/官網']      || '',
+        brandStage:     mapStage(row['品牌階段']),
+        category:       mapCategory(row['品類']),
+        currentChannel: row['目前通路']       || '',
+        productInfo:    row['品牌介紹']       || row['販售品項'] || '',
+        expectation:    mapExpectation(row['需求']),
+        motivation:     row['補充說明']       || row['備註'] || '',
+        lineJoined:     (row['已加入Line'] === '是' || row['lineJoined'] === 'yes') ? 'yes' : 'no',
+        insuranceFile:  row['責任險文件']     || '',
+        foodFile:       row['食品登錄文件']   || '',
+      }
+    }));
+
+    if (!allSubs.length) { setState('empty'); return; }
+    renderStats(allSubs);
+    applyFilters();
+    setState('table');
+
+  } catch (err) {
+    document.getElementById('err-msg').textContent = err.message;
+    setState('error');
+    console.error(err);
+  }
+}
+
+function mapStage(v) {
+  const m = { '構想階段': 'idea', '初創期': 'early', '成長期': 'growing', '成熟期': 'established' };
+  return m[v] || v || '';
+}
+function mapCategory(v) {
+  const m = { '食品/飲品': 'food', '手作/工藝': 'handcraft', '服飾/配件': 'fashion',
+    '美妝/保養': 'beauty', '生活用品/居家': 'lifestyle', '文化/藝術/出版': 'culture',
+    '服務/體驗': 'service', '其他': 'other' };
+  return m[v] || v || '';
+}
+function mapExpectation(v) {
+  const m = { '市集擺攤場域媒合': 'market', '品牌孵化與資源支援': 'incubation',
+    '天使投資人對接機會': 'investment', '以上都要': 'all' };
+  return m[v] || v || '';
+}
+
+function setState(s) {
+  document.getElementById('state-loading').hidden = s !== 'loading';
+  document.getElementById('state-error').hidden   = s !== 'error';
+  document.getElementById('state-empty').hidden   = s !== 'empty';
+  document.getElementById('table-wrap').hidden    = s !== 'table';
+  document.getElementById('stats-row').hidden     = s !== 'table';
+  document.getElementById('filter-bar').hidden    = s !== 'table';
+  const b = document.getElementById('sub-badge');
+  b.hidden = s !== 'table';
+  if (s === 'table') b.textContent = '共 ' + allSubs.length + ' 筆';
+}
+
+// ─── 統計 ───
+function renderStats(subs) {
+  const c = fn => subs.filter(fn).length;
+  document.getElementById('s-total').textContent      = subs.length;
+  document.getElementById('s-market').textContent     = c(s => s.data.expectation === 'market');
+  document.getElementById('s-incubation').textContent = c(s => s.data.expectation === 'incubation');
+  document.getElementById('s-investment').textContent = c(s => s.data.expectation === 'investment');
+  document.getElementById('s-all').textContent        = c(s => s.data.expectation === 'all');
+  document.getElementById('s-line').textContent       = c(s => s.data.lineJoined === 'yes');
+}
+
+// ─── 篩選 ───
+function applyFilters() {
+  const q    = document.getElementById('search-input').value.toLowerCase();
+  const stg  = document.getElementById('filter-stage').value;
+  const cat  = document.getElementById('filter-category').value;
+  const exp  = document.getElementById('filter-expectation').value;
+
+  filteredSubs = allSubs.filter(sub => {
+    const d = sub.data;
+    if (stg && d.brandStage !== stg) return false;
+    if (cat && d.category   !== cat) return false;
+    if (exp && d.expectation !== exp) return false;
+    if (q) {
+      const hay = [d.fullName, d.organization, d.email, d.phone, d.productInfo].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const countEl = document.getElementById('filter-count');
+  if (countEl) {
+    countEl.textContent = filteredSubs.length < allSubs.length
+      ? `顯示 ${filteredSubs.length} / ${allSubs.length} 筆`
+      : '';
+  }
+  renderTable(filteredSubs);
+}
+
+// ─── 對照表 ───
+const STAGE = {
+  idea:        ['構想期','b-idea'],
+  early:       ['初創期','b-early'],
+  growing:     ['成長期','b-growing'],
+  established: ['成熟期','b-established'],
+};
+const CAT = {
+  food:      ['食品/飲品','b-food'],
+  handcraft: ['手作/工藝','b-handcraft'],
+  fashion:   ['服飾/配件','b-fashion'],
+  beauty:    ['美妝/保養','b-beauty'],
+  lifestyle: ['生活用品','b-lifestyle'],
+  culture:   ['文化/藝術','b-culture'],
+  service:   ['服務/體驗','b-service'],
+  other:     ['其他','b-other'],
+};
+const EXP = {
+  market:     ['市集場域','b-market'],
+  incubation: ['品牌孵化','b-incubation'],
+  investment: ['投資對接','b-investment'],
+  all:        ['全部','b-all'],
+};
+const JOINED = { yes: ['✓ 是','b-yes'], no: ['✗ 否','b-no'] };
+
+function badge(map, val) {
+  const m = map[val];
+  if (!m) return '<span class="no-file">' + (esc(val) || '—') + '</span>';
+  return '<span class="badge ' + m[1] + '">' + m[0] + '</span>';
+}
+
+// ─── 渲染表格 ───
+function renderTable(subs) {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  subs.forEach((sub, i) => {
+    const d  = sub.data || {};
+    const dt = new Date(sub.created_at);
+    const dts = isNaN(dt) ? '—'
+      : dt.getFullYear() + '/' + pad(dt.getMonth()+1) + '/' + pad(dt.getDate())
+        + ' ' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="ci">' + (i+1) + '</td>' +
+      '<td class="cd">' + dts + '</td>' +
+      '<td class="cn">' + esc(d.fullName) + '</td>' +
+      '<td>' + esc(d.organization) + '</td>' +
+      '<td class="cp"><a href="tel:' + esc(d.phone) + '">' + esc(d.phone) + '</a></td>' +
+      '<td class="ce"><a href="mailto:' + esc(d.email) + '">' + esc(d.email) + '</a></td>' +
+      '<td>' + linkOrDash(d.socialLink) + '</td>' +
+      '<td>' + badge(STAGE, d.brandStage) + '</td>' +
+      '<td>' + badge(CAT, d.category) + '</td>' +
+      '<td><div class="expand" title="' + esc(d.currentChannel) + '">' + esc(d.currentChannel) + '</div></td>' +
+      '<td><div class="expand" title="' + esc(d.productInfo) + '">' + esc(d.productInfo) + '</div></td>' +
+      '<td>' + badge(EXP, d.expectation) + '</td>' +
+      '<td><div class="expand" title="' + esc(d.motivation) + '">' + esc(d.motivation) + '</div></td>' +
+      '<td>' + badge(JOINED, d.lineJoined) + '</td>' +
+      '<td>' + flink(d.insuranceFile) + '</td>' +
+      '<td>' + flink(d.foodFile) + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function linkOrDash(url) {
+  if (!url) return '<span class="no-file">—</span>';
+  return '<a href="' + esc(url) + '" target="_blank" rel="noopener" class="file-btn">🔗 查看</a>';
+}
+function flink(file) {
+  if (!file) return '<span class="no-file">—</span>';
+  const url = typeof file === 'string' ? file : (file.url || '');
+  if (!url) return '<span class="no-file">—</span>';
+  return '<a href="' + esc(url) + '" target="_blank" rel="noopener" class="file-btn">📄 查看</a>';
+}
+function esc(str) {
+  if (str === null || str === undefined || str === '') return '—';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+
+// ─── 匯出 CSV ───
+document.getElementById('export-btn').addEventListener('click', () => {
+  const data = filteredSubs.length ? filteredSubs : allSubs;
+  if (!data.length) { alert('目前沒有資料可匯出'); return; }
+
+  const HDR = ['#','申請時間','姓名','品牌/攤位名稱','手機','Email','社群/官網',
+    '品牌階段','品類','目前通路','品牌介紹','需求','補充說明','已加入Line',
+    '責任險文件','食品登錄文件'];
+
+  const rows = data.map((sub, i) => {
+    const d  = sub.data || {};
+    const dt = new Date(sub.created_at);
+    const dts = isNaN(dt) ? ''
+      : dt.getFullYear() + '/' + pad(dt.getMonth()+1) + '/' + pad(dt.getDate())
+        + ' ' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+    return [
+      i+1, dts, d.fullName, d.organization, d.phone, d.email, d.socialLink,
+      (STAGE[d.brandStage] || [''])[0],
+      (CAT[d.category]     || [''])[0],
+      d.currentChannel, d.productInfo,
+      (EXP[d.expectation]  || [''])[0],
+      d.motivation,
+      d.lineJoined === 'yes' ? '是' : '否',
+      getUrl(d.insuranceFile), getUrl(d.foodFile),
+    ].map(v => '"' + String(v ?? '').replace(/"/g,'""') + '"').join(',');
+  });
+
+  const csv  = '\uFEFF' + [HDR.map(h => '"' + h + '"').join(','), ...rows].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const today = new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
+  a.href = url;
+  a.download = '華市集招商申請_' + today + '.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+});
+
+function getUrl(file) {
+  if (!file) return '';
+  if (typeof file === 'string') return file;
+  return file?.url || '';
+}
+</script>
+</body>
+</html>
