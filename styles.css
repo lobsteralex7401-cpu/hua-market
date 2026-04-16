@@ -66,6 +66,14 @@ a:hover { color: var(--gold-dark); }
   font-weight: 700; font-size: 1.05rem;
   color: var(--ink); white-space: nowrap;
 }
+.brand-logo {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold);
+  flex-shrink: 0;
+}
+.brand-text { display: flex; align-items: baseline; gap: .2rem; }
 .brand-hua {
   color: var(--gold);
   font-size: 1.3rem;
