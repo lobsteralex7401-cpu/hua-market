@@ -50,10 +50,31 @@ function setupFileInput(inputId, labelId, boxId) {
   });
 }
 
+// ── 資安：表單防護 ──────────────────────────────────
+const SUBMIT_COOLDOWN_MS = 60 * 1000;  // 60 秒提交冷卻
+const RATE_KEY = 'form_last_hm';
+
+function isRateLimited() {
+  const last = parseInt(localStorage.getItem(RATE_KEY) || '0', 10);
+  return Date.now() - last < SUBMIT_COOLDOWN_MS;
+}
+function setRateLimit() { localStorage.setItem(RATE_KEY, String(Date.now())); }
+
+// 輸入長度限制
+function sanitizeInputLengths() {
+  const limits = { fullName:50, organization:80, phone:20, email:100, socialLink:200, currentChannel:300, productInfo:500, motivation:500 };
+  Object.entries(limits).forEach(([name, max]) => {
+    const el = form?.querySelector(`[name="${name}"]`);
+    if (el) el.setAttribute('maxlength', max);
+  });
+}
+
 // ── DOM ──
 const form      = document.getElementById('registration-form');
 const submitBtn = document.getElementById('submit-btn');
 const successEl = document.getElementById('success-msg');
+
+sanitizeInputLengths();
 
 // ── 將檔案轉為 base64 ──
 function fileToBase64(file) {
@@ -69,8 +90,19 @@ function fileToBase64(file) {
 form?.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearAllErrors();
+
+  // Honeypot：機器人偵測
+  if (form.querySelector('[name="website"]')?.value) return;
+
+  // 提交冷卻限制
+  if (isRateLimited()) {
+    alert('提交太頻繁，請稍後再試。');
+    return;
+  }
+
   if (!validateForm()) return;
 
+  setRateLimit();
   submitBtn.disabled = true;
   submitBtn.querySelector('.btn-text').hidden   = true;
   submitBtn.querySelector('.btn-loading').hidden = false;

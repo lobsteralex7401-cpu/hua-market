@@ -2,6 +2,9 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://script.google.com https://script.googleusercontent.com; frame-ancestors 'none'; base-uri 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>後台管理 — 華市集孵化基地</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -357,34 +360,85 @@
 
 <script>
 // ═══ 設定 ═══
-const ADMIN_PWD = 'hua@2026';
-const GAS_URL   = 'https://script.google.com/macros/s/AKfycbyq_RNKI37m1pH1_BiwZy4Ta0EaGuzJ-Pxhu51i04KH1b-rdQP3T3BfoSS9gVev9w/exec';
+// SHA-256 of 'hua@2026' — 請勿在此明文儲存密碼
+const ADMIN_HASH  = '245518b6f17a137c2d08cea61ed29aa0bc3e4d22a569158632ff8da45b920ec3';
+const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyq_RNKI37m1pH1_BiwZy4Ta0EaGuzJ-Pxhu51i04KH1b-rdQP3T3BfoSS9gVev9w/exec';
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS   = 15 * 60 * 1000;   // 15 分鐘鎖定
+const SESSION_MS   = 30 * 60 * 1000;   // 30 分鐘閒置登出
+const LK_KEY       = 'adm_lk_hm';
 
-let allSubs      = [];
-let filteredSubs = [];
+let allSubs = [], filteredSubs = [], sessionTimer = null;
 
-// ─── 登入 ───
-document.getElementById('login-form').addEventListener('submit', e => {
-  e.preventDefault();
-  const v = document.getElementById('pwd-input').value;
-  if (v === ADMIN_PWD) {
-    document.getElementById('login-screen').hidden = true;
-    document.getElementById('admin-screen').hidden = false;
-    loadData();
-  } else {
-    document.getElementById('pwd-err').textContent = '密碼錯誤，請再試一次';
-    document.getElementById('pwd-input').select();
-  }
-});
+// ─── 密碼雜湊 ───
+async function hashPwd(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ─── 暴力破解防護 ───
+function getLock()  { try { return JSON.parse(localStorage.getItem(LK_KEY)) || {}; } catch { return {}; } }
+function saveLock(o){ localStorage.setItem(LK_KEY, JSON.stringify(o)); }
+function clearLock(){ localStorage.removeItem(LK_KEY); }
+function isLocked() {
+  const lk = getLock();
+  if (!lk.attempts || lk.attempts < MAX_ATTEMPTS) return false;
+  if (Date.now() - (lk.time || 0) < LOCKOUT_MS) return true;
+  clearLock(); return false;
+}
+function lockRemainMin() { return Math.ceil((LOCKOUT_MS - (Date.now() - (getLock().time || 0))) / 60000); }
+
+// ─── Session 計時器 ───
+function startSession() {
+  clearTimeout(sessionTimer);
+  sessionTimer = setTimeout(() => { doLogout(); alert('⏱ 工作階段已逾時，請重新登入'); }, SESSION_MS);
+}
+function resetSession() { if (!document.getElementById('admin-screen').hidden) startSession(); }
+['click','keydown','touchstart','scroll'].forEach(ev => document.addEventListener(ev, resetSession, { passive: true }));
 
 // ─── 登出 ───
-document.getElementById('logout-btn').addEventListener('click', () => {
+function doLogout() {
+  clearTimeout(sessionTimer);
   document.getElementById('admin-screen').hidden = true;
   document.getElementById('login-screen').hidden = false;
   document.getElementById('pwd-input').value = '';
   document.getElementById('pwd-err').textContent = '';
   allSubs = []; filteredSubs = [];
+}
+
+// ─── 登入 ───
+document.getElementById('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const errEl = document.getElementById('pwd-err');
+  if (isLocked()) {
+    errEl.textContent = `帳號已鎖定，請 ${lockRemainMin()} 分鐘後再試`;
+    return;
+  }
+  const v = document.getElementById('pwd-input').value;
+  const h = await hashPwd(v);
+  if (h === ADMIN_HASH) {
+    clearLock();
+    document.getElementById('login-screen').hidden = true;
+    document.getElementById('admin-screen').hidden = false;
+    errEl.textContent = '';
+    startSession();
+    loadData();
+  } else {
+    const lk = getLock();
+    const attempts = (lk.attempts || 0) + 1;
+    saveLock({ attempts, time: Date.now() });
+    const remaining = MAX_ATTEMPTS - attempts;
+    if (remaining <= 0) {
+      errEl.textContent = `密碼錯誤次數過多，帳號已鎖定 ${lockRemainMin()} 分鐘`;
+    } else {
+      errEl.textContent = `密碼錯誤，還有 ${remaining} 次機會`;
+    }
+    document.getElementById('pwd-input').select();
+  }
 });
+
+// ─── 登出按鈕 ───
+document.getElementById('logout-btn').addEventListener('click', doLogout);
 
 // ─── 重新整理 ───
 document.getElementById('refresh-btn').addEventListener('click', loadData);

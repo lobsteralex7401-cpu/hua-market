@@ -2,6 +2,9 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://script.google.com https://script.googleusercontent.com; frame-ancestors 'none'; base-uri 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>華市集孵化基地 — 招商申請</title>
   <meta name="description" content="霧峰林家 × 華市集孵化基地。不只是擺攤，這是一條有機會連結資本的路。孵化、交流、投資同時發生的品牌基地。">
@@ -463,6 +466,11 @@
             <span>我已閱讀並同意相關招商規範、個人資料蒐集用途，以及華市集後續可能以電話或 Line 與我聯繫。</span>
           </label>
           <small class="check-err"></small>
+
+          <!-- Honeypot：機器人偵測（人類看不見） -->
+          <div style="position:absolute;left:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
+            <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" value=""></label>
+          </div>
 
           <!-- 送出 -->
           <div class="form-submit">
