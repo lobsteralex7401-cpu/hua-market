@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════
 //  Google Apps Script 部署網址（與原版相同）
 // ══════════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyq_RNKI37m1pH1_BiwZy4Ta0EaGuzJ-Pxhu51i04KH1b-rdQP3T3BfoSS9gVev9w/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyva9MUUcmjncp4U3jTEZwgKtqtJnv7KIclRaYBAufQnCYVA6csacDmLgtUCv-ZJGx1/exec';
 
 // ── 檔案上傳顯示 ──
 setupFileInput('insuranceFile', 'insurance-name', 'insurance-box');
