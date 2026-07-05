@@ -360,21 +360,14 @@
 
 <script>
 // ═══ 設定 ═══
-// SHA-256 of 'hua@2026' — 請勿在此明文儲存密碼
-const ADMIN_HASH  = '245518b6f17a137c2d08cea61ed29aa0bc3e4d22a569158632ff8da45b920ec3';
-const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyq_RNKI37m1pH1_BiwZy4Ta0EaGuzJ-Pxhu51i04KH1b-rdQP3T3BfoSS9gVev9w/exec';
+// 密碼驗證改在 Apps Script 後端（Script Properties），前端不再存密碼/雜湊
+const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyva9MUUcmjncp4U3jTEZwgKtqtJnv7KIclRaYBAufQnCYVA6csacDmLgtUCv-ZJGx1/exec';
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS   = 15 * 60 * 1000;   // 15 分鐘鎖定
 const SESSION_MS   = 30 * 60 * 1000;   // 30 分鐘閒置登出
 const LK_KEY       = 'adm_lk_hm';
 
 let allSubs = [], filteredSubs = [], sessionTimer = null;
-
-// ─── 密碼雜湊 ───
-async function hashPwd(s) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
 
 // ─── 暴力破解防護 ───
 function getLock()  { try { return JSON.parse(localStorage.getItem(LK_KEY)) || {}; } catch { return {}; } }
@@ -399,6 +392,7 @@ function resetSession() { if (!document.getElementById('admin-screen').hidden) s
 // ─── 登出 ───
 function doLogout() {
   clearTimeout(sessionTimer);
+  sessionStorage.removeItem('admin_token');
   document.getElementById('admin-screen').hidden = true;
   document.getElementById('login-screen').hidden = false;
   document.getElementById('pwd-input').value = '';
@@ -415,25 +409,35 @@ document.getElementById('login-form').addEventListener('submit', async e => {
     return;
   }
   const v = document.getElementById('pwd-input').value;
-  const h = await hashPwd(v);
-  if (h === ADMIN_HASH) {
-    clearLock();
-    document.getElementById('login-screen').hidden = true;
-    document.getElementById('admin-screen').hidden = false;
-    errEl.textContent = '';
-    startSession();
-    loadData();
-  } else {
-    const lk = getLock();
-    const attempts = (lk.attempts || 0) + 1;
-    saveLock({ attempts, time: Date.now() });
-    const remaining = MAX_ATTEMPTS - attempts;
-    if (remaining <= 0) {
-      errEl.textContent = `密碼錯誤次數過多，帳號已鎖定 ${lockRemainMin()} 分鐘`;
+  errEl.textContent = '登入中…';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'login', password: v })
+    });
+    const raw = await res.json();
+    if (raw.token) {
+      sessionStorage.setItem('admin_token', raw.token);
+      clearLock();
+      document.getElementById('login-screen').hidden = true;
+      document.getElementById('admin-screen').hidden = false;
+      errEl.textContent = '';
+      startSession();
+      loadData();
     } else {
-      errEl.textContent = `密碼錯誤，還有 ${remaining} 次機會`;
+      const lk = getLock();
+      const attempts = (lk.attempts || 0) + 1;
+      saveLock({ attempts, time: Date.now() });
+      const remaining = MAX_ATTEMPTS - attempts;
+      if (remaining <= 0) {
+        errEl.textContent = `密碼錯誤次數過多，帳號已鎖定 ${lockRemainMin()} 分鐘`;
+      } else {
+        errEl.textContent = `密碼錯誤，還有 ${remaining} 次機會`;
+      }
+      document.getElementById('pwd-input').select();
     }
-    document.getElementById('pwd-input').select();
+  } catch (err) {
+    errEl.textContent = '連線錯誤，請稍後再試';
   }
 });
 
@@ -455,9 +459,11 @@ async function loadData() {
     if (!GAS_URL || GAS_URL.includes('YOUR_GAS_URL')) {
       throw new Error('請先在 admin.html 填入 GAS_URL（Google Apps Script 部署網址）');
     }
-    const res = await fetch(GAS_URL);
+    const token = sessionStorage.getItem('admin_token');
+    const res = await fetch(GAS_URL + '?token=' + encodeURIComponent(token || ''));
     if (!res.ok) throw new Error('GAS 回應錯誤 ' + res.status);
     const raw = await res.json();
+    if (raw && raw.unauthorized) { doLogout(); throw new Error('登入逾時，請重新登入'); }
     if (raw && raw.error) throw new Error('GAS 錯誤：' + raw.error);
 
     allSubs = (Array.isArray(raw) ? raw : []).map((row, i) => ({
